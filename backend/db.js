@@ -1,8 +1,12 @@
-const mysql = require('mysql2')
+const mysql = require("mysql2")
 
-const connection = mysql.createConnection({
+let connection
 
-host:"mysql",
+function connectDatabase(){
+
+connection = mysql.createConnection({
+
+host:"mysql-service",
 user:"root",
 password:"password",
 database:"studentsdb"
@@ -12,12 +16,24 @@ database:"studentsdb"
 connection.connect(err => {
 
 if(err){
-console.error("Database connection failed:",err)
-return
-}
+
+console.log("MySQL not ready, retrying in 5 seconds...")
+setTimeout(connectDatabase,5000)
+
+}else{
 
 console.log("Connected to MySQL")
 
+}
+
 })
 
-module.exports = connection
+}
+
+connectDatabase()
+
+module.exports = {
+query:(sql,args)=>{
+return connection.promise().query(sql,args)
+}
+}
