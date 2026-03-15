@@ -1,0 +1,124 @@
+body{
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
+    margin:0;
+    padding:0;
+}
+
+/* main container */
+
+.container{
+    width:700px;
+    margin:60px auto;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+/* headings */
+
+h1{
+    margin-bottom:20px;
+}
+
+h2{
+    margin-top:30px;
+}
+
+/* form */
+
+.form-box{
+    margin-bottom:20px;
+}
+
+/* inputs */
+
+input{
+    width:85%;
+    padding:12px;
+    margin:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:14px;
+    outline:none;
+}
+
+input:focus{
+    border-color:#4facfe;
+}
+
+/* buttons */
+
+button{
+    padding:12px 25px;
+    margin-top:10px;
+    border:none;
+    background:#4facfe;
+    color:white;
+    font-size:15px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#007bff;
+}
+
+/* links */
+
+a{
+    text-decoration:none;
+    color:#007bff;
+}
+
+a:hover{
+    text-decoration:underline;
+}
+
+/* table */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+/* table header */
+
+th{
+    background:#4facfe;
+    color:white;
+    padding:12px;
+}
+
+/* table data */
+
+td{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+}
+
+/* table hover */
+
+tr:hover{
+    background:#f5f7fa;
+}
+
+/* zebra rows */
+
+tbody tr:nth-child(even){
+    background:#f9f9f9;
+}
+
+/* dashboard buttons */
+
+.logout-btn{
+    background:#ff4d4d;
+}
+
+.logout-btn:hover{
+    background:#d63031;
+}

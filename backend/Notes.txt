@@ -1,0 +1,16 @@
+1️⃣ Initialize Node Project
+
+cd backend
+
+npm init -y
+
+This will create: -> package.json
+
+2️⃣ Install Required Modules
+
+npm install express cors mysql2
+
+This installs: -> node_modules/
+                  package-lock.json
+
+
