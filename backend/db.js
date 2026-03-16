@@ -6,7 +6,7 @@ function connectDatabase(){
 
 connection = mysql.createConnection({
 
-host:"mysql-service",
+host:"mysql",
 user:"root",
 password:"password",
 database:"studentsdb"
