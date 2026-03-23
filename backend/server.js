@@ -36,7 +36,7 @@ app.use("/uploads", express.static(uploadDir))
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir)   // 🔥 FIXED (absolute path)
+    cb(null, uploadDir)
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname))
@@ -46,7 +46,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 🔥 5MB limit
+    fileSize: 5 * 1024 * 1024 // 5MB
   }
 })
 
@@ -60,13 +60,24 @@ app.post("/api/register", upload.single("photo"), (req, res, next) => {
 
   try {
     const { name, age, branch, year, email, password } = req.body
+
+    // 🔥 FIX: Convert to numbers
+    const ageNum = parseInt(age)
+    const yearNum = parseInt(year)
+
+    // 🔥 VALIDATION (VERY IMPORTANT)
+    if (isNaN(ageNum) || isNaN(yearNum)) {
+      console.warn("⚠️ Invalid input:", { age, year })
+      return res.status(400).json({ error: "Age and Year must be numbers" })
+    }
+
     const photo = req.file ? req.file.filename : null
 
     console.log("📦 File:", photo)
 
     db.query(
       "INSERT INTO students(name,age,branch,year,email,password,photo) VALUES(?,?,?,?,?,?,?)",
-      [name, age, branch, year, email, password, photo],
+      [name, ageNum, branch, yearNum, email, password, photo],
       (err, result) => {
 
         if (err) {
@@ -158,7 +169,7 @@ app.get("/api/student/:id", (req, res) => {
 })
 
 /* =========================
-   Global Error Handler 🔥
+   Global Error Handler
 ========================= */
 
 app.use((err, req, res, next) => {
@@ -171,9 +182,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong" })
 })
 
-
 /* =========================
-   Health Check (K8s Probes)
+   Health Check (K8s)
 ========================= */
 
 app.get('/health', (req, res) => {
