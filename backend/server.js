@@ -171,6 +171,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong" })
 })
 
+
+/* =========================
+   Health Check (K8s Probes)
+========================= */
+
+app.get('/health', (req, res) => {
+  res.status(200).send("OK")
+})
+
 /* =========================
    Start Server
 ========================= */
