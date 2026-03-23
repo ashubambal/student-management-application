@@ -1,14 +1,20 @@
-FROM node:18
+FROM node:18-alpine
 
+# Create app directory
 WORKDIR /app
 
-COPY package.json .
+# Install dependencies (better caching)
+COPY package*.json ./
+RUN npm install --only=production
 
-RUN npm install
-RUN mkdir -p /app/uploads
-
+# Copy app code
 COPY . .
 
+# Create uploads folder with permissions
+RUN mkdir -p /app/uploads && chmod 777 /app/uploads
+
+# Expose port
 EXPOSE 3000
 
-CMD ["node","server.js"]
+# Start app
+CMD ["node", "server.js"]
