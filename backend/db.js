@@ -1,39 +1,26 @@
 const mysql = require("mysql2")
 
-let connection
+const pool = mysql.createPool({
+  host: "mysql",          // k8s service name
+  user: "root",
+  password: "password",
+  database: "studentsdb",
 
-function connectDatabase(){
+  waitForConnections: true,
+  connectionLimit: 10,     // 🔥 important
+  queueLimit: 0,
 
-connection = mysql.createConnection({
-
-host:"mysql",
-user:"root",
-password:"password",
-database:"studentsdb"
-
+  connectTimeout: 10000    // 🔥 prevent hanging
 })
 
-connection.connect(err => {
-
-if(err){
-
-console.log("MySQL not ready, retrying in 5 seconds...")
-setTimeout(connectDatabase,5000)
-
-}else{
-
-console.log("Connected to MySQL")
-
-}
-
+// 🔥 Test connection at startup
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error("❌ MySQL connection failed:", err.message)
+  } else {
+    console.log("✅ Connected to MySQL")
+    connection.release()
+  }
 })
 
-}
-
-connectDatabase()
-
-module.exports = {
-query:(sql,args)=>{
-return connection.promise().query(sql,args)
-}
-}
+module.exports = pool
