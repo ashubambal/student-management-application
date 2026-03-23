@@ -47,6 +47,13 @@ const upload = multer({
   storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true)
+    } else {
+      cb(new Error("Only image files allowed"), false)
+    }
   }
 })
 
@@ -54,20 +61,24 @@ const upload = multer({
    Student Registration
 ========================= */
 
-app.post("/api/register", upload.single("photo"), (req, res, next) => {
+app.post("/api/register", upload.single("photo"), async (req, res, next) => {
 
+  console.time("register-api")
   console.log("🔥 Register API hit")
 
   try {
     const { name, age, branch, year, email, password } = req.body
 
-    // 🔥 FIX: Convert to numbers
+    // ✅ Basic validation
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: "Missing required fields" })
+    }
+
+    // 🔥 Convert to numbers
     const ageNum = parseInt(age)
     const yearNum = parseInt(year)
 
-    // 🔥 VALIDATION (VERY IMPORTANT)
     if (isNaN(ageNum) || isNaN(yearNum)) {
-      console.warn("⚠️ Invalid input:", { age, year })
       return res.status(400).json({ error: "Age and Year must be numbers" })
     }
 
@@ -75,27 +86,34 @@ app.post("/api/register", upload.single("photo"), (req, res, next) => {
 
     console.log("📦 File:", photo)
 
-    db.query(
-      "INSERT INTO students(name,age,branch,year,email,password,photo) VALUES(?,?,?,?,?,?,?)",
-      [name, ageNum, branch, yearNum, email, password, photo],
-      (err, result) => {
-
-        if (err) {
-          console.error("❌ DB Error:", err)
-          return res.status(500).json({ error: "Registration failed" })
+    // 🔥 DB QUERY WITH TIMEOUT
+    const queryPromise = new Promise((resolve, reject) => {
+      db.query(
+        "INSERT INTO students(name,age,branch,year,email,password,photo) VALUES(?,?,?,?,?,?,?)",
+        [name, ageNum, branch, yearNum, email, password, photo],
+        (err, result) => {
+          if (err) reject(err)
+          else resolve(result)
         }
+      )
+    })
 
-        console.log("✅ Insert success")
-
-        res.json({
-          message: "Student registered",
-          studentId: result.insertId
-        })
-      }
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("DB Timeout")), 5000)
     )
 
+    const result = await Promise.race([queryPromise, timeout])
+
+    console.log("✅ Insert success")
+    console.timeEnd("register-api")
+
+    res.json({
+      message: "Student registered",
+      studentId: result.insertId
+    })
+
   } catch (error) {
-    console.error("🔥 Unexpected Error:", error)
+    console.error("❌ Error:", error)
     next(error)
   }
 })
@@ -104,38 +122,43 @@ app.post("/api/register", upload.single("photo"), (req, res, next) => {
    Student Login
 ========================= */
 
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
 
   try {
     const { email, password } = req.body
 
-    db.query(
-      "SELECT * FROM students WHERE email=? AND password=?",
-      [email, password],
-      (err, result) => {
-
-        if (err) {
-          console.error("❌ DB Error:", err)
-          return res.status(500).json({ error: "Login failed" })
+    const queryPromise = new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM students WHERE email=? AND password=?",
+        [email, password],
+        (err, result) => {
+          if (err) reject(err)
+          else resolve(result)
         }
+      )
+    })
 
-        if (result.length > 0) {
-          res.json({
-            success: true,
-            user: {
-              id: result[0].id,
-              name: result[0].name
-            }
-          })
-        } else {
-          res.json({ success: false })
-        }
-      }
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("DB Timeout")), 5000)
     )
 
+    const result = await Promise.race([queryPromise, timeout])
+
+    if (result.length > 0) {
+      res.json({
+        success: true,
+        user: {
+          id: result[0].id,
+          name: result[0].name
+        }
+      })
+    } else {
+      res.json({ success: false })
+    }
+
   } catch (error) {
-    console.error("🔥 Unexpected Error:", error)
-    res.status(500).json({ error: "Internal Server Error" })
+    console.error("❌ Error:", error)
+    res.status(500).json({ error: error.message })
   }
 })
 
@@ -143,28 +166,33 @@ app.post("/api/login", (req, res) => {
    Get Student Profile
 ========================= */
 
-app.get("/api/student/:id", (req, res) => {
+app.get("/api/student/:id", async (req, res) => {
 
   try {
     const id = req.params.id
 
-    db.query(
-      "SELECT id,name,age,branch,year,email,photo FROM students WHERE id=?",
-      [id],
-      (err, result) => {
-
-        if (err) {
-          console.error("❌ DB Error:", err)
-          return res.status(500).json({ error: "Failed to fetch student" })
+    const queryPromise = new Promise((resolve, reject) => {
+      db.query(
+        "SELECT id,name,age,branch,year,email,photo FROM students WHERE id=?",
+        [id],
+        (err, result) => {
+          if (err) reject(err)
+          else resolve(result)
         }
+      )
+    })
 
-        res.json(result)
-      }
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("DB Timeout")), 5000)
     )
 
+    const result = await Promise.race([queryPromise, timeout])
+
+    res.json(result)
+
   } catch (error) {
-    console.error("🔥 Unexpected Error:", error)
-    res.status(500).json({ error: "Internal Server Error" })
+    console.error("❌ Error:", error)
+    res.status(500).json({ error: error.message })
   }
 })
 
@@ -179,11 +207,11 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: err.message })
   }
 
-  res.status(500).json({ error: "Something went wrong" })
+  res.status(500).json({ error: err.message || "Something went wrong" })
 })
 
 /* =========================
-   Health Check (K8s)
+   Health Check
 ========================= */
 
 app.get('/health', (req, res) => {

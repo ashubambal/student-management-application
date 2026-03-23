@@ -1,28 +1,48 @@
-const API="/api/register"
+const API = "/api/register"
 
-function register(){
+function register() {
 
-let formData=new FormData()
+  const btn = document.querySelector("button")
+  btn.disabled = true
+  btn.innerText = "Registering..."
 
-formData.append("name",document.getElementById("name").value)
-formData.append("age",document.getElementById("age").value)
-formData.append("branch",document.getElementById("branch").value)
-formData.append("year",document.getElementById("year").value)
-formData.append("email",document.getElementById("email").value)
-formData.append("password",document.getElementById("password").value)
+  let formData = new FormData()
 
-let file=document.getElementById("photo").files[0]
+  formData.append("name", document.getElementById("name").value)
+  formData.append("age", document.getElementById("age").value)
+  formData.append("branch", document.getElementById("branch").value)
+  formData.append("year", document.getElementById("year").value)
+  formData.append("email", document.getElementById("email").value)
+  formData.append("password", document.getElementById("password").value)
 
-formData.append("photo",file)
+  let file = document.getElementById("photo").files[0]
+  if (file) {
+    formData.append("photo", file)
+  }
 
-fetch(API,{
-method:"POST",
-body:formData
-})
-.then(res=>res.json())
-.then(data=>{
-alert("Registration Successful")
-window.location="index.html"
-})
+  fetch(API, {
+    method: "POST",
+    body: formData
+  })
+    .then(async (res) => {
+      const data = await res.json()
 
+      if (!res.ok) {
+        throw new Error(data.error || "Something failed")
+      }
+
+      return data
+    })
+    .then(data => {
+      alert("✅ Registration Successful")
+      window.location = "index.html"
+    })
+    .catch(err => {
+      console.error(err)
+      alert("❌ Error: " + err.message)
+    })
+    .finally(() => {
+      btn.disabled = false
+      btn.innerText = "Register"
+    })
 }
