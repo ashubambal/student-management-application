@@ -1,38 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Student Dashboard</title>
-<link rel="stylesheet" href="style.css">
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="container">
 
-<h1> Student Dashboard</h1>
+  <div class="header">
+    <h1> Student Dashboard</h1>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
 
-<button class="logout-btn" onclick="logout()">Logout</button>
+  <h2>My Profile</h2>
 
-<h2>My Profile</h2>
+  <div id="status"></div>
 
-<table>
-
-<thead>
-<tr>
-<th>Photo</th>
-<th>Name</th>
-<th>Age</th>
-<th>Branch</th>
-<th>Year</th>
-<th>Email</th>
-</tr>
-</thead>
-
-<tbody id="students">
-
-</tbody>
-
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>Photo</th>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Branch</th>
+        <th>Year</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody id="students"></tbody>
+  </table>
 
 </div>
 
