@@ -1,4 +1,28 @@
-// 🔥 Load tracing FIRST (safe mode)
+const client = require('prom-client')
+
+// 🔥 Collect default metrics (CPU, memory, event loop etc.)
+client.collectDefaultMetrics()
+
+/* =========================
+   🔥 Custom Metrics
+========================= */
+
+// Register Counter
+const registerCounter = new client.Counter({
+  name: 'student_register_total',
+  help: 'Total number of student registrations'
+})
+
+// Login Counter with labels
+const loginCounter = new client.Counter({
+  name: 'student_login_total',
+  help: 'Total number of login attempts',
+  labelNames: ['status'] // success / failed
+})
+
+/* =========================
+   🔥 Load tracing FIRST
+========================= */
 try {
   require('./tracing')
 } catch (err) {
@@ -69,12 +93,10 @@ app.post("/api/register", upload.single("photo"), async (req, res, next) => {
   try {
     const { name, age, branch, year, email, password } = req.body
 
-    // ✅ Basic validation
     if (!name || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" })
     }
 
-    // 🔥 Convert to numbers
     const ageNum = parseInt(age)
     const yearNum = parseInt(year)
 
@@ -84,9 +106,6 @@ app.post("/api/register", upload.single("photo"), async (req, res, next) => {
 
     const photo = req.file ? req.file.filename : null
 
-    console.log("📦 File:", photo)
-
-    // 🔥 DB QUERY WITH TIMEOUT
     const queryPromise = new Promise((resolve, reject) => {
       db.query(
         "INSERT INTO students(name,age,branch,year,email,password,photo) VALUES(?,?,?,?,?,?,?)",
@@ -103,6 +122,9 @@ app.post("/api/register", upload.single("photo"), async (req, res, next) => {
     )
 
     const result = await Promise.race([queryPromise, timeout])
+
+    // ✅ Increment metric
+    registerCounter.inc()
 
     console.log("✅ Insert success")
     console.timeEnd("register-api")
@@ -145,6 +167,10 @@ app.post("/api/login", async (req, res) => {
     const result = await Promise.race([queryPromise, timeout])
 
     if (result.length > 0) {
+
+      // ✅ Increment success login
+      loginCounter.inc({ status: 'success' })
+
       res.json({
         success: true,
         user: {
@@ -153,11 +179,19 @@ app.post("/api/login", async (req, res) => {
         }
       })
     } else {
+
+      // ✅ Increment failed login
+      loginCounter.inc({ status: 'failed' })
+
       res.json({ success: false })
     }
 
   } catch (error) {
     console.error("❌ Error:", error)
+
+    // optional: track errors
+    loginCounter.inc({ status: 'error' })
+
     res.status(500).json({ error: error.message })
   }
 })
@@ -197,6 +231,23 @@ app.get("/api/student/:id", async (req, res) => {
 })
 
 /* =========================
+   🔥 Prometheus Metrics Endpoint
+========================= */
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType)
+  res.end(await client.register.metrics())
+})
+
+/* =========================
+   Health Check
+========================= */
+
+app.get('/health', (req, res) => {
+  res.status(200).send("OK")
+})
+
+/* =========================
    Global Error Handler
 ========================= */
 
@@ -211,17 +262,9 @@ app.use((err, req, res, next) => {
 })
 
 /* =========================
-   Health Check
-========================= */
-
-app.get('/health', (req, res) => {
-  res.status(200).send("OK")
-})
-
-/* =========================
    Start Server
 ========================= */
 
 app.listen(3000, "0.0.0.0", () => {
-  console.log("Server running on port 3000")
+  console.log("🚀 Server running on port 3000")
 })

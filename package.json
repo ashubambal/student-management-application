@@ -4,6 +4,7 @@
     "@opentelemetry/auto-instrumentations-node": "^0.71.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.213.0",
     "@opentelemetry/sdk-node": "^0.213.0",
-    "bcrypt": "^6.0.0"
+    "bcrypt": "^6.0.0",
+    "prom-client": "^15.1.3"
   }
 }
