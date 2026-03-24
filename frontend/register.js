@@ -47,7 +47,7 @@ function register() {
       return data
     })
     .then(() => {
-      alert("✅ Registration Successful")
+      alert("Registration Successful")
       window.location = "index.html"
     })
     .catch(err => {

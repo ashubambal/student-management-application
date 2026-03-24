@@ -34,12 +34,12 @@ function addStudent() {
       return data
     })
     .then(() => {
-      alert("✅ Student Added")
+      alert("Student Added")
       loadStudents()
     })
     .catch(err => {
       console.error(err)
-      alert("❌ " + err.message)
+      alert("Failed to add student: " + err.message)
     })
     .finally(() => reset(btn))
 }
@@ -69,7 +69,7 @@ function loadStudents() {
     })
     .catch(err => {
       console.error(err)
-      alert("❌ Failed to load students")
+      alert("Failed to load students")
     })
 }
 

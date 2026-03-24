@@ -47,7 +47,7 @@ function loadStudent() {
     })
     .catch(err => {
       console.error(err)
-      alert("❌ Failed to load profile")
+      alert("Failed to load profile")
     })
 }
 
