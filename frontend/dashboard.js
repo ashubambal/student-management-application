@@ -5,7 +5,10 @@ if (!studentId) {
 }
 
 function setStatus(msg, isError = false) {
-  console.log(msg)
+  const statusDiv = document.getElementById("status")
+  statusDiv.textContent = msg
+  statusDiv.className = isError ? "error" : "success"
+  setTimeout(() => statusDiv.textContent = "", 3000)
 }
 
 /* =========================
@@ -22,33 +25,33 @@ function loadStudent() {
     })
     .then(data => {
 
-      let table = document.getElementById("students")
-      table.innerHTML = ""
+      const card = document.getElementById("profile-card")
+      if (data.length > 0) {
+        const student = data[0] // Assuming single student
 
-      data.forEach(student => {
-
-        let row = document.createElement("tr")
-
-        row.innerHTML = `
-          <td>
-            <img src="/uploads/${student.photo}" 
-                 width="60" height="60" 
-                 style="border-radius:50%">
-          </td>
-          <td>${student.name}</td>
-          <td>${student.age}</td>
-          <td>${student.branch}</td>
-          <td>${student.year}</td>
-          <td>${student.email}</td>
+        card.innerHTML = `
+          <img src="/uploads/${student.photo}" alt="Profile Photo">
+          <div class="info">
+            <div><strong>Name:</strong> ${student.name}</div>
+            <div><strong>Age:</strong> ${student.age}</div>
+            <div><strong>Branch:</strong> ${student.branch}</div>
+            <div><strong>Year:</strong> ${student.year}</div>
+            <div><strong>Email:</strong> ${student.email}</div>
+          </div>
         `
-
-        table.appendChild(row)
-      })
+      } else {
+        card.innerHTML = "<p>No profile data found.</p>"
+      }
     })
     .catch(err => {
       console.error(err)
-      alert("Failed to load profile")
+      setStatus("Failed to load profile", true)
     })
+}
+
+function logout() {
+  localStorage.removeItem("studentId")
+  window.location.href = "index.html"
 }
 
 /* =========================

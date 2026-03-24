@@ -3,28 +3,50 @@
 <head>
   <title>Register Student</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
 
 <div class="container">
 
-  <h1>Student Registration</h1>
+  <h1><i class="fas fa-user-plus"></i> Student Registration</h1>
 
-  <input id="name" placeholder="Name">
-  <input id="age" placeholder="Age">
-  <input id="branch" placeholder="Branch">
-  <input id="year" placeholder="Year">
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-
-  <input type="file" id="photo">
-
-  <button onclick="register()">Register</button>
+  <form>
+    <div class="form-group">
+      <label for="name"><i class="fas fa-user"></i> Name</label>
+      <input id="name" type="text" placeholder="Enter your name" required>
+    </div>
+    <div class="form-group">
+      <label for="age"><i class="fas fa-birthday-cake"></i> Age</label>
+      <input id="age" type="number" placeholder="Enter your age" required>
+    </div>
+    <div class="form-group">
+      <label for="branch"><i class="fas fa-code-branch"></i> Branch</label>
+      <input id="branch" type="text" placeholder="Enter your branch" required>
+    </div>
+    <div class="form-group">
+      <label for="year"><i class="fas fa-calendar-alt"></i> Year</label>
+      <input id="year" type="number" placeholder="Enter your year" required>
+    </div>
+    <div class="form-group">
+      <label for="email"><i class="fas fa-envelope"></i> Email</label>
+      <input id="email" type="email" placeholder="Enter your email" required>
+    </div>
+    <div class="form-group">
+      <label for="password"><i class="fas fa-lock"></i> Password</label>
+      <input id="password" type="password" placeholder="Enter your password" required>
+    </div>
+    <div class="form-group">
+      <label for="photo"><i class="fas fa-camera"></i> Photo</label>
+      <input type="file" id="photo" accept="image/*">
+    </div>
+    <button onclick="register()"><i class="fas fa-user-plus"></i> Register</button>
+  </form>
 
   <div id="status"></div>
 
-  <a href="index.html">Back to Login</a>
+  <p><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Login</a></p>
 
 </div>
 
