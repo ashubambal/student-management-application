@@ -20,6 +20,28 @@ const loginCounter = new client.Counter({
   labelNames: ['status'] // success / failed
 })
 
+// Total Students Gauge
+const totalStudentsGauge = new client.Gauge({
+  name: 'students_total',
+  help: 'Total number of registered students'
+})
+
+// Function to update total students gauge
+async function updateTotalStudents() {
+  try {
+    const queryPromise = new Promise((resolve, reject) => {
+      db.query("SELECT COUNT(*) as count FROM students", (err, result) => {
+        if (err) reject(err)
+        else resolve(result)
+      })
+    })
+    const result = await queryPromise
+    totalStudentsGauge.set(result[0].count)
+  } catch (err) {
+    console.error("Error updating students gauge:", err)
+  }
+}
+
 /* =========================
    🔥 Load tracing FIRST
 ========================= */
@@ -58,14 +80,7 @@ app.use("/uploads", express.static(uploadDir))
    Multer Configuration
 ========================= */
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir)
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname))
-  }
-})
+const storage = multer.memoryStorage() // Store in memory instead of disk
 
 const upload = multer({
   storage,
@@ -104,7 +119,7 @@ app.post("/api/register", upload.single("photo"), async (req, res, next) => {
       return res.status(400).json({ error: "Age and Year must be numbers" })
     }
 
-    const photo = req.file ? req.file.filename : null
+    const photo = req.file ? req.file.buffer : null
 
     const queryPromise = new Promise((resolve, reject) => {
       db.query(
@@ -125,6 +140,9 @@ app.post("/api/register", upload.single("photo"), async (req, res, next) => {
 
     // ✅ Increment metric
     registerCounter.inc()
+
+    // Update total students gauge
+    updateTotalStudents()
 
     console.log("✅ Insert success")
     console.timeEnd("register-api")
@@ -222,6 +240,11 @@ app.get("/api/student/:id", async (req, res) => {
 
     const result = await Promise.race([queryPromise, timeout])
 
+    // Convert photo buffer to base64 if exists
+    if (result.length > 0 && result[0].photo) {
+      result[0].photo = `data:image/jpeg;base64,${result[0].photo.toString('base64')}`
+    }
+
     res.json(result)
 
   } catch (error) {
@@ -264,6 +287,8 @@ app.use((err, req, res, next) => {
 /* =========================
    Start Server
 ========================= */
+
+updateTotalStudents() // Set initial gauge value
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("🚀 Server running on port 3000")
