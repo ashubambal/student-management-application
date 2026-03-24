@@ -29,7 +29,7 @@ function loadStudent() {
       if (data.length > 0) {
         const student = data[0] // Assuming single student
 
-        const photoSrc = student.photo ? `/uploads/${student.photo}` : 'https://via.placeholder.com/100x100?text=No+Photo'
+        const photoSrc = student.photo || 'https://via.placeholder.com/100x100?text=No+Photo'
 
         card.innerHTML = `
           <img src="${photoSrc}" alt="Profile Photo">
